@@ -1,0 +1,42 @@
+version: "3.8"
+
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: legaldoc_qdrant
+    ports:
+      - "6333:6333"   # REST API (dipakai Python client)
+      - "6334:6334"   # gRPC port
+    volumes:
+      # Data Qdrant disimpan persistent di Docker volume
+      # Jadi data tidak hilang meski container di-restart
+      - qdrant_data:/qdrant/storage
+    environment:
+      - QDRANT__LOG_LEVEL=INFO
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:6333/healthz || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  qdrant_data:
+    driver: local
+
+# ─── Cara Pakai ────────────────────────────────────────────────────────────────
+#
+# Jalankan Qdrant:
+#   docker-compose up -d qdrant
+#
+# Stop Qdrant:
+#   docker-compose stop qdrant
+#
+# Hapus semua data Qdrant (HATI-HATI!):
+#   docker-compose down -v
+#
+# Lihat log Qdrant:
+#   docker logs legaldoc_qdrant -f
+#
+# Akses Qdrant Dashboard:
+#   http://localhost:6333/dashboard
