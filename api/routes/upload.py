@@ -118,7 +118,7 @@ def ingest_pdf_to_qdrant(pdf_path: Path) -> int:
                 "filter": {
                     "must": [
                         {
-                            "key": "source",
+                            "key": "source_file",
                             "match": {"value": pdf_path.name}
                         }
                     ]
@@ -168,7 +168,7 @@ def ingest_pdf_to_qdrant(pdf_path: Path) -> int:
 async def upload_and_ingest(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
-    process_immediately: bool = True,
+    process_immediately: bool = False,
 ):
     """
     Upload PDF dan ingest ke vector database.
@@ -191,7 +191,8 @@ async def upload_and_ingest(
     
     # Buat path untuk save file
     upload_dir = Path(settings.upload_dir)
-    file_path = upload_dir / file.filename
+    safe_name = file.filename.replace(" ", "_")
+    file_path = upload_dir / safe_name
     
     # Cek jika file sudah ada
     # overwrite aja (biar UX enak)
@@ -278,7 +279,7 @@ def list_uploaded_files():
         filenames = {}
 
         for point in points:
-            source = point.payload.get("source")
+            source = point.payload.get("source_file")
             if not source:
                 continue
 
@@ -331,7 +332,7 @@ def delete_file(filename: str):
                 "filter": {
                     "must": [
                         {
-                            "key": "source",
+                            "key": "source_file",
                             "match": {
                                 "value": filename
                             }

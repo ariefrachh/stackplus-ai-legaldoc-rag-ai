@@ -10,8 +10,7 @@ Atau:
 
 import logging
 from contextlib import asynccontextmanager
-
-from fastapi import FastAPI, status
+from fastapi import FastAPI, status, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -119,7 +118,7 @@ app.add_middleware(
         "http://localhost:5173",
         "http://localhost:3000",
     ],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -127,7 +126,7 @@ app.add_middleware(
 # ─── Exception Handlers ──────────────────────────────────────────────────────
 
 @app.exception_handler(Exception)
-async def global_exception_handler(request, exc):
+async def global_exception_handler(request: Request, exc: Exception):
     """
     Global exception handler untuk catch semua unhandled exceptions.
     
@@ -136,11 +135,13 @@ async def global_exception_handler(request, exc):
     logger.error(f"Unhandled exception: {exc}", exc_info=True)
     
     return JSONResponse(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        status_code=500,
         content={
-            "detail": "Internal server error",
-            "error": str(exc) if settings.debug else "An error occurred",
+            "detail": str(exc)
         },
+        headers={
+            "Access-Control-Allow-Origin": "https://legal-stackplus.vercel.app"
+        }
     )
 
 
