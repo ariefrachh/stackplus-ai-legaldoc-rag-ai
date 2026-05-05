@@ -115,12 +115,14 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://legal-stackplus.vercel.app",
+        "https://www.legal-stackplus.vercel.app",
         "http://localhost:5173",
         "http://localhost:3000",
     ],
-    allow_credentials=False,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # ─── Exception Handlers ──────────────────────────────────────────────────────
@@ -140,7 +142,9 @@ async def global_exception_handler(request: Request, exc: Exception):
             "detail": str(exc)
         },
         headers={
-            "Access-Control-Allow-Origin": "https://legal-stackplus.vercel.app"
+            "Access-Control-Allow-Origin": request.headers.get("origin", "*"),
+            "Access-Control-Allow-Headers": "*",
+            "Access-Control-Allow-Methods": "*",
         }
     )
 
