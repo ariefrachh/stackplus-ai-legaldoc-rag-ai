@@ -1,9 +1,11 @@
-const API_BASE = "http://localhost:8000";
+const API_BASE =
+  import.meta.env.VITE_API_URL ||
+  "https://backend-legaldoc-stackplus-production.up.railway.app";
 
 export async function askQuestion(question, selectedFile) {
   const res = await fetch(`${API_BASE}/query/ask`, {
     method: "POST",
-    headers: {"Content-Type": "application/json"},
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       question,
       filter_source: selectedFile,

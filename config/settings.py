@@ -35,9 +35,9 @@ class Settings(BaseSettings):
     debug: bool = False
     
     # ─── Qdrant ─────────────────────────────────────────────────────────────
-    qdrant_host: str = "localhost"
-    qdrant_port: int = 6333
-    qdrant_collection: str = "legaldoc_chunks"
+    qdrant_host: str = os.getenv("QDRANT_HOST", "localhost")
+    qdrant_port: int = int(os.getenv("QDRANT_PORT", 6333))
+    qdrant_collection: str = os.getenv("QDRANT_COLLECTION", "legaldoc_chunks")
     
     # ─── Embedding ──────────────────────────────────────────────────────────
     embedding_model: str = "nlpaueb/legal-bert-base-uncased"
