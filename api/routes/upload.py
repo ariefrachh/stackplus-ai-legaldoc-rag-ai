@@ -272,27 +272,24 @@ def list_uploaded_files():
 
         collection_name = settings.qdrant_collection
 
-        # 🔥 CEK COLLECTION ADA ATAU TIDAK
         collections = client.get_collections().collections
-        collection_names = [c.name for c in collections]
+        names = [c.name for c in collections]
 
-        if collection_name not in collection_names:
-            # ✅ belum ada → return kosong
+        if collection_name not in names:
             return FileListResponse(files=[], total=0)
 
-        # 🔥 kalau ada, baru scroll
-        scroll_result = client.scroll(
+        points, _ = client.scroll(
             collection_name=collection_name,
             limit=10000,
             with_payload=True
         )
 
-        points = scroll_result[0]
-
         filenames = {}
 
         for point in points:
-            source = point.payload.get("source_file")
+            payload = point.payload or {}
+
+            source = payload.get("source_file")
             if not source:
                 continue
 
@@ -320,9 +317,7 @@ def list_uploaded_files():
         )
 
     except Exception as e:
-        logger.error(f"Qdrant list error: {e}")
-
-        # 🔥 fallback aman
+        logger.exception("LIST FILES ERROR")
         return FileListResponse(files=[], total=0)
 
 
