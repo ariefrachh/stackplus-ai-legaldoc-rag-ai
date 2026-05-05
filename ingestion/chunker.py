@@ -72,33 +72,29 @@ class Chunk:
 
 
 # ─── Pola Regex untuk mendeteksi awal pasal ────────────────────────────────────
-
-# Kita dukung berbagai format penulisan pasal dalam kontrak Indonesia/Inggris:
-# - "Pasal 1" / "PASAL 1"
-# - "Pasal I" / "PASAL I" (angka romawi)
-# - "Article 1" / "ARTICLE 1"
-# - "1." di awal baris dengan huruf kapital setelahnya
 PASAL_PATTERNS = [
-    # Format: "Pasal 1" atau "PASAL 1" dengan judul opsional di baris yang sama
-    r"(?i)^(pasal\s+(\d+|[IVXivx]+))\s*[:\-–]?\s*(.*)",
+    # Format: "Pasal 1" atau "PASAL 1"
+    r"^(pasal\s+(\d+|[IVXivx]+))\s*[:\-–]?\s*(.*)",
+
     # Format: "Article 1" atau "ARTICLE 1"
-    r"(?i)^(article\s+(\d+|[IVXivx]+))\s*[:\-–]?\s*(.*)",
+    r"^(article\s+(\d+|[IVXivx]+))\s*[:\-–]?\s*(.*)",
+
     # Format: "BAB I" atau "BAB 1"
-    r"(?i)^(bab\s+(\d+|[IVXivx]+))\s*[:\-–]?\s*(.*)",
+    r"^(bab\s+(\d+|[IVXivx]+))\s*[:\-–]?\s*(.*)",
 ]
 
 AYAT_PATTERN = re.compile(
-    r"(?i)(ayat\s+(\d+))\s*[.:]?\s*(.*?)(?=(ayat\s+\d+)|$)",
-    re.DOTALL
+    r"(ayat\s+(\d+))\s*[.:]?\s*(.*?)(?=(ayat\s+\d+)|$)",
+    re.DOTALL | re.IGNORECASE
 )
 
-# Gabungkan semua pattern menjadi satu regex dengan OR
+# Gabungkan semua pattern jadi satu
 COMBINED_PATTERN = re.compile(
     "|".join(PASAL_PATTERNS),
-    re.MULTILINE
+    re.MULTILINE | re.IGNORECASE
 )
 
-# Romawi ke integer — untuk normalisasi nomor pasal
+# Romawi ke integer
 ROMAN_MAP = {
     "I": 1, "II": 2, "III": 3, "IV": 4, "V": 5,
     "VI": 6, "VII": 7, "VIII": 8, "IX": 9, "X": 10,
