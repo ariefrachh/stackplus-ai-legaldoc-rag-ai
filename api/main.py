@@ -129,18 +129,11 @@ app.add_middleware(
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    """
-    Global exception handler untuk catch semua unhandled exceptions.
-    
-    Ini mencegah server crash dan memberikan error response yang jelas.
-    """
     logger.error(f"Unhandled exception: {exc}", exc_info=True)
-    
+
     return JSONResponse(
         status_code=500,
-        content={
-            "detail": str(exc)
-        },
+        content={"detail": str(exc)},
         headers={
             "Access-Control-Allow-Origin": request.headers.get("origin", "*"),
             "Access-Control-Allow-Headers": "*",

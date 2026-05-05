@@ -8,6 +8,7 @@ Endpoints:
 """
 
 import logging
+import re
 from qdrant_client import QdrantClient
 from qdrant_client.http.exceptions import UnexpectedResponse
 from pathlib import Path
@@ -132,15 +133,27 @@ def ingest_pdf_to_qdrant(pdf_path: Path) -> int:
         print(f"⚠️ Gagal hapus data lama: {e}")
 
     # 🔥 STEP 1: CHUNKING
-    chunks = chunk_pdf(pdf_path)
+    try:
+        chunks = chunk_pdf(pdf_path)
+    except Exception as e:
+        logger.exception("Chunking PDF gagal")
+        raise ValueError(f"Gagal membaca PDF: {str(e)}")
+
     print(f"🔥 TOTAL CHUNKS: {len(chunks)}")
+
+    if not chunks:
+        raise ValueError(f"Tidak ada teks ditemukan dalam PDF {pdf_path.name}")
 
     if not chunks:
         raise ValueError(f"Tidak ada chunks dari {pdf_path.name}")
 
     # 🔥 STEP 2: EMBEDDING
     embedder = get_default_embedder()
-    embedded = embedder.embed_chunks(chunks)
+    try:
+        embedded = embedder.embed_chunks(chunks)
+    except Exception as e:
+        logger.exception("Embedding gagal")
+        raise ValueError(f"Gagal membuat embedding: {str(e)}")
     print("🔥 EMBEDDING SELESAI")
 
     # 🔥 STEP 3: QDRANT
@@ -168,7 +181,7 @@ def ingest_pdf_to_qdrant(pdf_path: Path) -> int:
 async def upload_and_ingest(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
-    process_immediately: bool = False,
+    process_immediately: bool = True,
 ):
     """
     Upload PDF dan ingest ke vector database.
@@ -191,7 +204,7 @@ async def upload_and_ingest(
     
     # Buat path untuk save file
     upload_dir = Path(settings.upload_dir)
-    safe_name = file.filename.replace(" ", "_")
+    safe_name = re.sub(r"[^a-zA-Z0-9._-]", "_", file.filename)
     file_path = upload_dir / safe_name
     
     # Cek jika file sudah ada
